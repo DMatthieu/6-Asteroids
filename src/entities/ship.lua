@@ -20,6 +20,23 @@ function Ship.create(x, y, sprite, thrustPower, rotationSpeed)
         if love.keyboard.isDown('right') then
             self.angle = self.angle + self.rotationSpeed * dt
         end
+
+        local angleInRadians = math.rad(self.angle)
+
+        local directionX = math.sin(angleInRadians)
+        local directionY = -math.cos(angleInRadians)
+
+        self.thrusterActive = love.keyboard.isDown("up")
+
+        if self.thrusterActive then
+            self.dx = self.dx + directionX * self.thrustPower * dt
+            self.dy = self.dy + directionY * self.thrustPower * dt
+        end
+
+        self.x = self.x + self.dx * dt
+        self.y = self.y + self.dy * dt
+
+        
     end
 
     function ship:draw()
@@ -34,12 +51,9 @@ function Ship.create(x, y, sprite, thrustPower, rotationSpeed)
             self.sprite:getHeight() / 2
         )
 
-        -- love.graphics.print("Rotational Direction: "..ship.rotationalDirection, 10, 10)
     end
 
-    -- function ship:keypressed(key)
 
-    -- end
 
     return ship
 end
