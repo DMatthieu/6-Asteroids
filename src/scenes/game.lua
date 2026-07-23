@@ -16,12 +16,14 @@ function GameScene.enter()
     ship = Ship.create(
         width / 2,
         height / 2,
+        shipSprite,
         Constants.SHIP_THRUST_POWER,
-        shipSprite)
+        Constants.SHIP_ROTATION_SPEED    
+    )
 end
 
 function GameScene.update(dt)
-   
+   ship:update(dt)
 end
 
 function GameScene.draw()
@@ -29,7 +31,7 @@ function GameScene.draw()
 end
 
 function GameScene.keypressed(key)
-    
+    -- ship:keypressed(key)
 end
 
 return GameScene
