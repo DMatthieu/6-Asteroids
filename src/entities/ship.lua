@@ -36,7 +36,23 @@ function Ship.create(x, y, sprite, thrustPower, rotationSpeed)
         self.x = self.x + self.dx * dt
         self.y = self.y + self.dy * dt
 
+        local halfWidth = self.sprite:getWidth() / 2
+        local halfHeight = self.sprite:getHeight() / 2
+        local screenWidth = love.graphics.getWidth()
+        local screenHeight = love.graphics.getHeight()
         
+        if self.x < -halfWidth then
+            self.x = screenWidth + halfWidth
+        elseif self.x > screenWidth + halfWidth then
+            self.x = -halfWidth
+        end
+
+        if self.y < -halfHeight then
+            self.y = screenHeight + halfHeight
+        elseif self.y > screenHeight + halfHeight then
+            self.y = -halfHeight
+        end
+
     end
 
     function ship:draw()
@@ -50,6 +66,9 @@ function Ship.create(x, y, sprite, thrustPower, rotationSpeed)
             self.sprite:getWidth() / 2,
             self.sprite:getHeight() / 2
         )
+
+        love.graphics.print("ship X: "..self.x, 10, 10)
+        love.graphics.print("ship Y: "..self.y, 10, 30)
 
     end
 
