@@ -32,6 +32,19 @@ function AsteroidField.create(count)
     function field:update(dt)
         for _, asteroid in ipairs(field.asteroids) do
             asteroid:update(dt)
+
+            --Screen wrapping asteroids
+            if asteroid.x + asteroid.radius < 0 then
+                asteroid.x = love.graphics.getWidth() + asteroid.radius
+            elseif asteroid.x - asteroid.radius > love.graphics.getWidth() then
+                asteroid.x = -asteroid.radius
+            end
+
+            if asteroid.y + asteroid.radius < 0 then
+                asteroid.y = love.graphics.getHeight() + asteroid.radius
+            elseif asteroid.y - asteroid.radius > love.graphics.getHeight() then
+                asteroid.y = -asteroid.radius
+            end
         end
     end
 

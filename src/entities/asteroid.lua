@@ -31,6 +31,8 @@ function Asteroid.create(x, y, dx, dy, speed, radius, vertexCount)
     asteroid.y = y
     asteroid.dx = dx
     asteroid.dy = dy
+    asteroid.radius = radius
+    asteroid.vertexCount = vertexCount
     asteroid.points = generateShape(radius, vertexCount)
     asteroid.speed = speed
 
