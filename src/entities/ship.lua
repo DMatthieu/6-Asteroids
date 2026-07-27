@@ -14,8 +14,21 @@ function Ship.create(x, y, sprite, thrustPower, rotationSpeed)
     ship.thrusterActive = false
     ship.sprite = sprite
     ship.rotationSpeed = rotationSpeed
+    ship.collisionRadius = math.min(
+        sprite:getWidth(),
+        sprite:getHeight()
+    ) * 0.35
+    ship.isDestroyed = false
+    ship.isInvincible = false
+    ship.blinkTimer = 0
    
     function ship:update(dt)
+
+        if self.isInvincible then
+            self.blinkTimer = self.blinkTimer + dt
+        else
+            self.blinkTimer = 0
+        end 
 
         --Rotation du vaisseau
         if love.keyboard.isDown('left') then
@@ -62,6 +75,15 @@ function Ship.create(x, y, sprite, thrustPower, rotationSpeed)
     end
 
     function ship:draw()
+
+        if self.isDestroyed then
+            return
+        end
+
+        if self.isInvincible and math.floor(self.blinkTimer * 8) % 2 == 0 then
+            return
+        end
+        
         love.graphics.draw(
             self.sprite,
             self.x,
@@ -85,6 +107,14 @@ function Ship.create(x, y, sprite, thrustPower, rotationSpeed)
             dx = self.directionX,
             dy = self.directionY
         }
+    end
+
+    function ship:destroy()
+        print("ship destroyed")
+        self.isDestroyed = true
+        self.dx = 0
+        self.dy = 0
+        self.thrusterActive = false
     end
 
     return ship

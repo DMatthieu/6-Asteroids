@@ -54,6 +54,33 @@ function AsteroidField.create(count)
         end
     end
 
+    function field:destroyAsteroid(index)
+        local asteroid = self.asteroids[index]
+        local fragmentRadius = asteroid.radius / 2
+
+        if fragmentRadius >= Constants.ASTEROID_MINIMUM_RADIUS then
+            for i = 1, 2 do
+                local angle = love.math.random() * math.pi * 2
+                local dx = math.cos(angle)
+                local dy = math.sin(angle)
+
+                local newAsteroid = Asteroid.create(
+                    asteroid.x,
+                    asteroid.y,
+                    dx,
+                    dy,
+                    asteroid.speed,
+                    fragmentRadius,
+                    Constants.ASTEROID_VERTEX_COUNT
+                )
+
+                table.insert(self.asteroids, newAsteroid)
+            end
+        end
+
+        table.remove(self.asteroids, index)
+    end
+
     return field
 end
 

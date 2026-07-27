@@ -4,6 +4,7 @@ local Constants = require("src.constants")
 local AsteroidField = require("src/entities/asteroid_field")
 local Ship = require("src/entities/ship")
 local Projectile = require("src/entities/projectile")
+local Timer = require("src/core/timer")
 
 local GameScene = {}
 
@@ -13,43 +14,52 @@ local shipSprite = love.graphics.newImage("src/assets/gfx/ship.png")
 local projectiles
 local projectileSprite = love.graphics.newImage("src/assets/gfx/shot3.png")
 local explosionSound = love.audio.newSource("src/assets/sfx/Explosion6.wav", "static")
+local shipExplosionSound = love.audio.newSource("src/assets/sfx/Explosion5.wav", "static")
+local lives
 
-local function checkCircleCollision(projectile, asteroid)
-    --on calcule la longueur du "vecteur de distance" (dx, dy) entre les deux points
-    local dx = projectile.x - asteroid.x
-    local dy = projectile.y - asteroid.y
 
+local function checkCircleCollision(a, radiusA, b, radiusB)
+    local dx = a.x - b.x
+    local dy = a.y - b.y
 
     local distance = math.sqrt(dx * dx + dy * dy)
 
-    local projectileRadius =
-        math.min(
-            projectile.sprite:getWidth(),
-            projectile.sprite:getHeight()
-        ) / 2
+    return distance <= radiusA + radiusB
+end
 
-    return distance <= projectileRadius + asteroid.radius
+local function createShip()
+    local width = love.graphics.getWidth()
+    local height = love.graphics.getHeight()
+
+    return Ship.create(
+        width / 2,
+        height / 2,
+        shipSprite,
+        Constants.SHIP_THRUST_POWER,
+        Constants.SHIP_ROTATION_SPEED
+    )
 end
 
 function GameScene.enter()
     local width = love.graphics.getWidth()
     local height = love.graphics.getHeight()
 
-    ship = Ship.create(
-        width / 2,
-        height / 2,
-        shipSprite,
-        Constants.SHIP_THRUST_POWER,
-        Constants.SHIP_ROTATION_SPEED    
-    )
+    ship = createShip()
 
     asteroidField = AsteroidField.create(28)
 
     projectiles = {}
+
+    lives = 3
 end
 
 function GameScene.update(dt)
-    ship:update(dt)
+    Timer.update(dt)
+
+    if not ship.isDestroyed then
+        ship:update(dt)
+    end
+   
     asteroidField:update(dt)
 
     --boucle d'update des projectiles
@@ -61,21 +71,62 @@ function GameScene.update(dt)
     for i = #projectiles, 1, -1 do
         local projectile = projectiles[i]
 
+        local projectileRadius = math.min(
+            projectile.sprite:getWidth(),
+            projectile.sprite:getHeight()
+        ) / 2
+
         for j = #asteroidField.asteroids, 1, -1 do
             local asteroid = asteroidField.asteroids[j]
 
-            if checkCircleCollision(projectile, asteroid) then
-
-                -- suppression
+            if checkCircleCollision(
+                projectile,
+                projectileRadius,
+                asteroid,
+                asteroid.radius
+            ) then
                 table.remove(projectiles, i)
-                table.remove(asteroidField.asteroids, j)
+                asteroidField:destroyAsteroid(j)
                 explosionSound:clone():play()
                 break
-
             end
         end
-    end    
+    end
 
+    -- Détection des collisions entre le vaisseau et les astéroïdes
+    if not ship.isDestroyed and not ship.isInvincible then
+        for j = #asteroidField.asteroids, 1, -1 do
+            local asteroid = asteroidField.asteroids[j]
+
+            if checkCircleCollision(
+                ship,
+                ship.collisionRadius,
+                asteroid,
+                asteroid.radius
+            ) then
+                asteroidField:destroyAsteroid(j)
+                ship:destroy()
+                shipExplosionSound:clone():play()
+                lives= lives - 1
+
+                if lives > 0 then
+                    Timer.after(2, function()
+                        ship = createShip()
+                        ship.isInvincible = true
+
+                        Timer.after(2, function()
+                            ship.isInvincible = false
+                        end)
+                    end)
+                end
+
+                break
+            end
+        end
+    end
+
+
+    
 
     --Suppression des projectiles entièrement hors écran
     for i = #projectiles, 1, -1 do
@@ -106,11 +157,22 @@ function GameScene.draw()
     for _, projectile in ipairs(projectiles) do
         projectile:draw()
     end
-    love.graphics.print("Nb Projectiles: "..#projectiles, 10, 70)
+
+    love.graphics.print("Lives: "..lives, 10, 90)
+
+    if lives <= 0 then
+        love.graphics.printf(
+            "GAME OVER",
+            0,
+            love.graphics.getHeight() / 2,
+            love.graphics.getWidth(),
+            "center"
+        )
+    end
 end
 
 function GameScene.keypressed(key)
-    if key == 'space' then
+    if key == "space" and lives > 0 and not ship.isDestroyed then
         local shotData = ship:shoot()
 
         local projectile = Projectile.create(
