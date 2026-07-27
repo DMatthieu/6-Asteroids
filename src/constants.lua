@@ -1,7 +1,9 @@
 local Constants = {}
 
-Constants.SHIP_THRUST_POWER = 15
+Constants.SHIP_THRUST_POWER = 30
 Constants.SHIP_ROTATION_SPEED = 180
+
+Constants.PROJECTILE_SPEED = 500
 
 Constants.ASTEROID_MINIMUM_RADIUS = 40
 Constants.ASTEROID_MAXIMUM_RADIUS = 55

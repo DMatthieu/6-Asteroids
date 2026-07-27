@@ -7,6 +7,8 @@ function Ship.create(x, y, sprite, thrustPower, rotationSpeed)
     ship.y = y
     ship.dx = 0
     ship.dy = 0
+    ship.directionX = 0
+    ship.directionY = -1
     ship.angle = 0
     ship.thrustPower = thrustPower
     ship.thrusterActive = false
@@ -14,6 +16,8 @@ function Ship.create(x, y, sprite, thrustPower, rotationSpeed)
     ship.rotationSpeed = rotationSpeed
    
     function ship:update(dt)
+
+        --Rotation du vaisseau
         if love.keyboard.isDown('left') then
             self.angle = self.angle - self.rotationSpeed * dt
         end 
@@ -21,21 +25,23 @@ function Ship.create(x, y, sprite, thrustPower, rotationSpeed)
             self.angle = self.angle + self.rotationSpeed * dt
         end
 
+        -- Modification de la direction de la vitesse
         local angleInRadians = math.rad(self.angle)
+        self.directionX = math.sin(angleInRadians)
+        self.directionY = -math.cos(angleInRadians)
 
-        local directionX = math.sin(angleInRadians)
-        local directionY = -math.cos(angleInRadians)
-
+        -- Détection de l'activation du reacteur et application de la direction sur la vitesse
         self.thrusterActive = love.keyboard.isDown("up")
-
         if self.thrusterActive then
-            self.dx = self.dx + directionX * self.thrustPower * dt
-            self.dy = self.dy + directionY * self.thrustPower * dt
+            self.dx = self.dx + self.directionX * self.thrustPower * dt
+            self.dy = self.dy + self.directionY * self.thrustPower * dt
         end
 
+        --Affectation de la vitesse résiduelle aux coordonnées du vaisseau
         self.x = self.x + self.dx * dt
         self.y = self.y + self.dy * dt
 
+        --Screen wrapping
         local halfWidth = self.sprite:getWidth() / 2
         local halfHeight = self.sprite:getHeight() / 2
         local screenWidth = love.graphics.getWidth()
@@ -73,7 +79,12 @@ function Ship.create(x, y, sprite, thrustPower, rotationSpeed)
     end
 
     function ship:shoot()
-        
+        return {
+            x = self.x,
+            y = self.y,
+            dx = self.directionX,
+            dy = self.directionY
+        }
     end
 
     return ship
