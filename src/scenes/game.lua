@@ -12,7 +12,24 @@ local asteroidField
 local shipSprite = love.graphics.newImage("src/assets/gfx/ship.png")
 local projectiles
 local projectileSprite = love.graphics.newImage("src/assets/gfx/shot3.png")
+local explosionSound = love.audio.newSource("src/assets/sfx/Explosion6.wav", "static")
 
+local function checkCircleCollision(projectile, asteroid)
+    --on calcule la longueur du "vecteur de distance" (dx, dy) entre les deux points
+    local dx = projectile.x - asteroid.x
+    local dy = projectile.y - asteroid.y
+
+
+    local distance = math.sqrt(dx * dx + dy * dy)
+
+    local projectileRadius =
+        math.min(
+            projectile.sprite:getWidth(),
+            projectile.sprite:getHeight()
+        ) / 2
+
+    return distance <= projectileRadius + asteroid.radius
+end
 
 function GameScene.enter()
     local width = love.graphics.getWidth()
@@ -26,7 +43,7 @@ function GameScene.enter()
         Constants.SHIP_ROTATION_SPEED    
     )
 
-    asteroidField = AsteroidField.create(8)
+    asteroidField = AsteroidField.create(28)
 
     projectiles = {}
 end
@@ -39,6 +56,26 @@ function GameScene.update(dt)
     for _, projectile in ipairs(projectiles) do
         projectile:update(dt)
     end
+
+    -- Détection des collisions entre projectiles et astéroïdes
+    for i = #projectiles, 1, -1 do
+        local projectile = projectiles[i]
+
+        for j = #asteroidField.asteroids, 1, -1 do
+            local asteroid = asteroidField.asteroids[j]
+
+            if checkCircleCollision(projectile, asteroid) then
+
+                -- suppression
+                table.remove(projectiles, i)
+                table.remove(asteroidField.asteroids, j)
+                explosionSound:clone():play()
+                break
+
+            end
+        end
+    end    
+
 
     --Suppression des projectiles entièrement hors écran
     for i = #projectiles, 1, -1 do
