@@ -72,7 +72,9 @@ function Ship.create(x, y, sprite, thrustPower, rotationSpeed)
 
     end
 
-
+    function ship:shoot()
+        
+    end
 
     return ship
 end
