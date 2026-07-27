@@ -1,5 +1,6 @@
 --game.lua:
 
+local SceneManager = require("src.core.scene_manager")
 local Constants = require("src.constants")
 local AsteroidField = require("src/entities/asteroid_field")
 local Ship = require("src/entities/ship")
@@ -16,6 +17,7 @@ local projectileSprite = love.graphics.newImage("src/assets/gfx/shot3.png")
 local explosionSound = love.audio.newSource("src/assets/sfx/Explosion6.wav", "static")
 local shipExplosionSound = love.audio.newSource("src/assets/sfx/Explosion5.wav", "static")
 local lives
+local gameWon
 
 
 local function checkCircleCollision(a, radiusA, b, radiusB)
@@ -44,9 +46,11 @@ function GameScene.enter()
     local width = love.graphics.getWidth()
     local height = love.graphics.getHeight()
 
+    gameWon = false
+
     ship = createShip()
 
-    asteroidField = AsteroidField.create(28)
+    asteroidField = AsteroidField.create(3)
 
     projectiles = {}
 
@@ -147,6 +151,10 @@ function GameScene.update(dt)
             table.remove(projectiles, i)
         end
     end
+
+    if lives > 0 and #asteroidField.asteroids == 0 then
+        gameWon = true
+    end
 end
 
 function GameScene.draw()
@@ -169,6 +177,26 @@ function GameScene.draw()
             "center"
         )
     end
+
+
+
+    if lives <= 0 then
+    love.graphics.printf(
+        "GAME OVER\nPress ENTER to restart",
+        0,
+        love.graphics.getHeight() / 2,
+        love.graphics.getWidth(),
+        "center"
+    )
+    elseif gameWon then
+        love.graphics.printf(
+            "YOU WIN!\nPress ENTER to restart",
+            0,
+            love.graphics.getHeight() / 2,
+            love.graphics.getWidth(),
+            "center"
+        )
+    end
 end
 
 function GameScene.keypressed(key)
@@ -185,6 +213,10 @@ function GameScene.keypressed(key)
         )
 
         table.insert(projectiles, projectile)
+    end
+
+    if key == "return" and (lives <= 0 or gameWon) then
+        SceneManager.setScene("game")
     end
 end
 

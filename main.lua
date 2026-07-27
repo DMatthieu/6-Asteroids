@@ -1,3 +1,4 @@
+--main.lua
 local SceneManager = require("src.core.scene_manager")
 local GameScene = require("src.scenes.game")
 
